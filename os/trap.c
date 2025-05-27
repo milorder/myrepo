@@ -5,9 +5,9 @@
 #include "defs.h"
 #include "loader.h"
 #include "plic.h"
+#include "signal/ksignal.h"
 #include "syscall.h"
 #include "timer.h"
-#include "signal/ksignal.h"
 
 static int64 kp_print_lock = 0;
 extern volatile int panicked;
@@ -36,6 +36,15 @@ static int handle_intr(void) {
             ticks++;
             wakeup(&ticks);
             release(&tickslock);
+            struct proc *p = curr_proc();
+            if (p != NULL && p->alarm_active) {
+                acquire(&tickslock);
+                if (ticks >= p->alarm_ticks) {
+                    sigkill(p->pid, SIGALRM, 0);
+                    p->alarm_active = 0;
+                }
+                release(&tickslock);
+            }
         }
         set_next_timer();
         return 1;
@@ -141,7 +150,7 @@ static void handle_pgfault(void) {
             // - Store PageFault  : Missing A/D bit
             *pte |= PTE_A;
             if (cause == StorePageFault)
-                *pte |= PTE_D;    
+                *pte |= PTE_D;
             return;
         }
     }

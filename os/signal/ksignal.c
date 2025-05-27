@@ -4,6 +4,36 @@
 #include <proc.h>
 #include <trap.h>
 
+extern uint ticks;
+extern struct spinlock tickslock;
+
+int do_alarm(int seconds) {
+    struct proc *p = myproc();
+    int old        = p->alarm_active ? p->alarm_seconds : 0;
+
+    if (seconds == 0) {
+        p->alarm_active  = 0;
+        p->alarm_ticks   = 0;
+        p->alarm_seconds = 0;
+        return old;
+    }
+
+    acquire(&tickslock);
+    p->alarm_ticks = ticks + seconds;
+    release(&tickslock);
+
+    p->alarm_active  = 1;
+    p->alarm_seconds = seconds;
+    return old;
+}
+
+int sys_alarm(void) {
+    int seconds;
+    if (argint(0, &seconds) < 0)
+        return -1;
+    return do_alarm(seconds);
+}
+
 // 初始化信号
 int siginit(struct proc *p) {
     for (int i = SIGMIN; i <= SIGMAX; i++) {
