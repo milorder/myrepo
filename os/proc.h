@@ -3,8 +3,8 @@
 
 #include "queue.h"
 #include "riscv.h"
-#include "signal/ksignal.h"
 #include "vm.h"
+#include "signal/ksignal.h"
 
 enum {
     STDIN  = 0,
@@ -69,10 +69,6 @@ struct proc {
 
     // Project signal:
     struct ksignal signal;
-
-    uint64 alarm_ticks;  // ticks 时钟，到期时触发 SIGALRM
-    int alarm_active;    // 是否启用 alarm
-    int alarm_seconds;   // 当前设置的 alarm 秒数
 };
 
 static inline int cpuid() {

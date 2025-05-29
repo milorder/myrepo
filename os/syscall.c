@@ -11,8 +11,6 @@ int64 sys_fork() {
     return fork();
 }
 
-int64 sys_alarm(void);
-
 int64 sys_exec(uint64 __user path, uint64 __user argv) {
     int ret;
     char *kpath = kalloc(&kstrbuf);
@@ -74,7 +72,7 @@ int64 sys_wait(int pid, uint64 __user va) {
     struct proc *p = curr_proc();
     int *code      = NULL;
 
-    return wait(pid, (int *)va);
+    return wait(pid, (int*) va);
 }
 
 int64 sys_getpid() {
@@ -234,9 +232,6 @@ void syscall() {
             break;
         case SYS_sigpending:
             ret = sys_sigpending((sigset_t *)args[0]);
-            break;
-        case SYS_alarm:
-            ret = sys_alarm();
             break;
         default:
             ret = -1;

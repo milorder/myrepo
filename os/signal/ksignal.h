@@ -18,6 +18,12 @@ int siginit_exec(struct proc *p);
 
 int do_signal(void);
 
+// 内核发送信号的辅助函数
+void send_kernel_signal(struct proc *p, int signo, int code);
+
+// 主动检查并发送SIGCHLD信号
+void check_sigchld(void);
+
 // syscall handler:
 int sys_sigaction(int signo, const sigaction_t __user *act, sigaction_t __user *oldact);
 int sys_sigreturn();
